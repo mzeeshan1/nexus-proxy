@@ -62,9 +62,11 @@ public final class NexusHttpProxy {
                                  final HttpServerRequest origReq,
                                  final HttpServerResponse origRes) {
         final Handler<HttpClientResponse> proxiedResHandler = proxiedRes -> {
-            if (!proxiedRes.headers().contains("Content-Length")) {
+            boolean hasContentLength = proxiedRes.headers().names().stream()
+            .anyMatch(header -> header.equalsIgnoreCase("Content-Length"));
+            if (!hasContentLength) {
                 origRes.setChunked(true);
-                }
+            }
             origRes.setStatusCode(proxiedRes.statusCode());
             origRes.headers().setAll(proxiedRes.headers());
             proxiedRes.handler(origRes::write);
